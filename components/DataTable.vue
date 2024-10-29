@@ -71,7 +71,7 @@
         <div class="col-12 col-md-4">
           <div v-if="selectedPlayer" class="bg-white-10 rounded">
             <div class="player-image text-center pt-5">
-              <img :src="defaultImage" class="mt-4" width="80%">
+              <img src="@/assets/Images/player1.png" class="mt-4" width="80%">
             </div>
             <div class="player-details pb-1 rounded bg-card-player">
               <div class="text-center player-name">{{ selectedPlayer.operatorPlayerName }}</div>
@@ -99,7 +99,7 @@ export default {
       page: 1,
       itemsPerPage: 10,
       selectedPlayer: null, // Holds the currently selected player's data
-      defaultImage: '/_nuxt/assets/Images/player1.png', // Default player image
+      defaultImage: '/assets/Images/player1.png', // Default player image
       headers: [
         { text: "Name", value: "name" },
         { text: "Team", value: "team" },
