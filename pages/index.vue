@@ -5,56 +5,34 @@
       <div class="filter-section">
         <div class="row">
           <div class="col-12 col-md-4">
-            <select class="form-control form-select">
-            <option>Select Operator</option>
-            <option v-for="operator in operators" :key="operator.id" :value="operator.id">
+            <select class="form-control form-select" @change="selectOperator">
+            <option disabled selected>Select Operator</option>
+            <option v-for="operator in operators" :key="operator.id" :value="operator.operator">
               {{ operator.operator }}
             </option>
             </select>
           </div>
           <div class="col-12 col-md-4">
-            <select class="form-control form-select">
-              <option>Select Game Type</option>
+            <select class="form-control form-select" @change="selectOperatorName">
+              <option disabled selected>Select Game Type</option>
+              <option v-for="operatorname in operatorNames" :key="operatorname.name" :value="operatorname.name">
+                {{ operatorname.name }}
+              </option>
             </select>
           </div>
           <div class="col-12 col-md-4">
-            <select class="form-control form-select">
-              <option>Select Slate Name</option>
+            <select class="form-control form-select" @change="selectGame">
+              <option disabled selected>Select Slate Name</option>
+              <option v-for="game in games" :key="game.type" :value="game.type">
+                {{ game.type }}
+              </option>
             </select>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <div class="table-player-section">
-    <div class="row flex-column-reverse flex-md-row">
-      <div class="col-12 col-md-8">
-        <div class="row">
-          <div class="col-12 col-md-12">
-            <div class="bg-white-10 rounded">
-              <DataTable
-                operator="SALAM"
-                type="football"
-                slate="14"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-12 col-md-4">
-        <div class="bg-white-10 rounded">
-          <div class="player-image text-center pt-5">
-            <img src="@/assets/Images/player1.png" class="mt-4" width="80%">
-          </div>
-          <div class="player-details pb-1 rounded bg-card-player">
-            <div class="text-center player-name">John Doe</div>
-            <div class="text-center player-rank">51</div>
-            <div class="text-center player-subtitle pb-5 mb-5">Team</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <DataTable :players="players" />
 </div>
 </template>
 
@@ -63,17 +41,16 @@ import DataTable from '~/components/DataTable.vue';
 export default {
   data() {
     return {
-      page: 1,
-      itemsPerPage: 8,
-      headers: [
-        { text: "Name", value: "name" },
-        { text: "Team", value: "team" },
-        { text: "Position", value: "position" },
-        { text: "Salary", value: "salary", align: "end" },
-        { text: "Points", value: "points", align: "end" },
-      ],
       jsonData: [],
-      operators:[]
+      operators:[],
+      operatorNames:[],
+      games:[],
+      slates:[],
+      selectedOperator:null,
+      selectedOperatorName:null,
+      selectedGame:null,
+      selectedSlate:null,
+      players:null,
     };
   },
   name: 'IndexPage',
@@ -94,22 +71,104 @@ export default {
     },
     populateOperators() {
       const operatorMap = new Map();
-      
+
       for (let i = 0; i < this.jsonData.length; i++) {
         const operator = this.jsonData[i].operator;
         const operatorId = this.jsonData[i]._id;
 
-        // If the operator isn't already in the Map, add it
-        if (!operatorMap.has(operator)) {
-          operatorMap.set(operator, operatorId);
+        // Combine operator and operatorId to create a unique key
+        const uniqueKey = `${operator}`;
+
+        // If this uniqueKey isn't already in the Map, add the object
+        if (!operatorMap.has(uniqueKey)) {
+          operatorMap.set(uniqueKey, { id: operatorId, operator: operator });
         }
       }
 
-      // Convert the Map to an array of objects
-      this.operators = Array.from(operatorMap, ([operator, id]) => ({ operator, id }));
+      // Optional: Convert the Map to an array if needed
+      this.operators = Array.from(operatorMap.values());
+
       console.log(this.operators);
+    },
+
+
+    selectOperator(event){
+      this.selectedOperator = event.target.value;
+      this.listOperatorName();
+      this.games = null;
+      this.listPlayers();
+    },
+    selectGame(event){
+      this.selectedGame = event.target.value;
+      this.listPlayers();
+    },
+
+    listOperatorName(){
+      const operatorsNameSet = new Set();
+      for(let i = 0 ; i < this.jsonData.length; i++){
+        if(this.selectedOperator === this.jsonData[i].operator){
+          const name = this.jsonData[i].operatorName;
+          operatorsNameSet.add(name);
+        }
+      }
+      this.operatorNames = Array.from(operatorsNameSet).map(name => ({name}));
+    },
+    listGameTypes() {
+      const gameTypesSet = new Set(); // Use a Set to store unique game types
+
+      for (let i = 0; i < this.jsonData.length; i++) {
+        if(this.selectedOperator === this.jsonData[i].operator  && this.selectedOperatorName === this.jsonData[i].operatorName){
+
+          const gameType = this.jsonData[i].operatorGameType;
+
+          // Add the game type to the Set for uniqueness
+          gameTypesSet.add(gameType);
+        }
+      }
+
+      // Convert the Set to an array of objects
+      this.games = Array.from(gameTypesSet).map(type => ({ type }));
+    },
+    selectOperatorName(event){
+      this.selectedOperatorName = event.target.value;
+      this.listGameTypes();
+      this.listPlayers();
+    },
+    listSlates(){
+      const slateTypesSet = new Set();
+      for(let i = 0 ; i < this.jsonData.length ; i++){
+        const slate = this.jsonData[i].slateId;
+        slateTypesSet.add(slate);
+      }
+      console.log(slateTypesSet);
+      this.slates = Array.from(slateTypesSet).map(type => ({type}))
+    },
+    listPlayers() {
+  let players = [];
+  if (this.selectedOperator === null) {
+    this.players = null;
+    return;
+  }
+
+  for (let i = 0; i < this.jsonData.length; i++) {
+    const data = this.jsonData[i];
+
+    const operatorMatch = this.selectedOperator === data.operator;
+    const operatorNameMatch = this.selectedOperatorName === data.operatorName || this.selectedOperatorName === null;
+    const gameMatch = this.selectedGame === data.operatorGameType || this.selectedGame === null;
+
+    if (operatorMatch && operatorNameMatch && gameMatch) {
+      players = players.concat(data.dfsSlatePlayers); // Flatten the array
     }
+  }
+
+  this.players = players;
+  console.log(this.players);
+}
+
+
   },
+
   mounted() {
     this.loadData().then(() => {
       this.populateOperators();
