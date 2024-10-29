@@ -1,5 +1,9 @@
-# Fantasy Football - Vue.Js Application
+![Alt text](assets/Images/readme.png)
 
+# Fantasy Football - Vue.Js Application
+<p>This application is desinged to demonstrate the Players records with their Opeerator, Game Types and Slates. Application has adorable fetures like data table with pagination, rows limit and quick pagination with buttons.</p>
+
+# To Run the Application or Build
 ## Build Setup
 
 ```bash
